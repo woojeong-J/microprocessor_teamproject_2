@@ -4,7 +4,7 @@ volatile int max_speed = 200000;
 volatile int limited_speed = 0;
 volatile int speed_time = 10;
 static uint32_t dist_buffer = 0;
-volatile int distance = 0;
+
 
 #define DIST_THRESHOLD 5000000
 // [튜닝 포인트] 이 숫자로 거리 올라가는 속도를 조절합니다.
@@ -61,6 +61,10 @@ void PORT_init_Motor(void)
 	PORTA_PCR13 |= (0b1000<<IRQC_BITS); //logic 0
 	PORTA_PCR13 |= (1<<1) | (1<<0);
 	GPIOA_PDDR &= ~(1<<PTA13); // Input
+	// LED red
+	PORTD_PCR15 &= ~((0b111)<<MUX_BITS);
+	PORTD_PCR15 |= (1<<MUX_BITS);   //led red
+	GPIOD_PDDR |= (1<<PTD15);  // 출력
 }
 
 void ADC0_init(void)
@@ -164,6 +168,18 @@ void Distance()
 
         if(distance > 99) distance = 0; // 0~99 반복
     }
+}
+
+void Fuel_Warning()
+{
+	if(distance > 60)
+    {
+    	GPIOD_PCOR = (1<<PTD15); //led red on
+    }
+    else
+   	{
+        GPIOD_PSOR = (1<<PTD15);
+   	}
 }
 
 void Velocity_init()

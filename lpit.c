@@ -7,6 +7,7 @@ void LPIT0_Ch0_IRQHandler(void) //10ms rtos
     Process_State_Action();
 
     Distance();
+    Fuel_Warning();
 
     adc_start();
 	adcResult = read_adc_chx(); //가변 저항 값 0~ 4095

@@ -206,12 +206,5 @@
 #define GPIOE_PDDR (*((volatile unsigned*)(GPIOE_BASE + 0x14)))
 #define GPIOE_PDIR (*((volatile unsigned*)(GPIOE_BASE + 0x10)))
 
-typedef enum {
-    STATE_OFF,      // 시동 꺼짐
-    STATE_P,        // 주차 (Parking)
-    STATE_D,        // 주행 (Drive)
-    STATE_R,        // 후진 (Reverse)
-    STATE_CRUISE    // 크루즈 모드
-} CarState_t;
 
 #endif

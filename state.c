@@ -18,6 +18,8 @@ void Process_State_Transition(void)
                  case STATE_R:
                      current_state = STATE_P; // R -> P
                      break;
+                default:
+                     break;
                  // ...
              }
              Gear_Flag = 0; // 처리 했으니 깃발 내림

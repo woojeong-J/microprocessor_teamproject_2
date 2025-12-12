@@ -5,6 +5,7 @@
 #include "handler.h"
 #include "seven_segment.h"
 #include "common.h"
+#include "state.h"
 
 void Display_ON();
 

@@ -16,5 +16,6 @@ void DRV_Coasting_Control(void);
 void Keep_Constant_Speed(void);
 void Distance(void);
 void Velocity_init(void);
+void Fuel_Warning(void);
 
 #endif
