@@ -22,10 +22,15 @@ void LPIT0_Ch0_IRQHandler(void) //10ms rtos
     LPIT_MSR |= (1<<TIF0_BIT);
 }
 
-void LPIT0_Ch1_IRQHandler(void) //0.05ms
+void LPIT0_Ch1_IRQHandler(void) // 2ms (화면 제어)
 {
     displayDigitClear();
-    if(Start_Flag == 1) Display_ON();
+    
+    // [수정] Start_Flag 대신 current_state로 판단
+    if(current_state != STATE_OFF) 
+    {
+        Display_ON();
+    }
 
     LPIT_MSR |= (1 << TIF1_BIT);
 }

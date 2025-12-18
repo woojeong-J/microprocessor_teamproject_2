@@ -31,6 +31,8 @@
 #define PORTB_PCR12	*((volatile unsigned*)(PORTB_BASE + 0x30)) //com5
 #define PORTB_PCR13	*((volatile unsigned*)(PORTB_BASE + 0x34)) //com6
 
+#define PORTB_PCR1    *((volatile unsigned*)(PORTB_BASE + 0x4)) //dc in2
+
 #define PORTC_BASE 	(0x4004B000)
 #define PORTC_PCR12 *((volatile unsigned*)(PORTC_BASE + 0x30)) // 스위치1 (오른쪽 방향)
 #define PORTC_PCR13 *((volatile unsigned*)(PORTC_BASE + 0x34)) // 스위치2 (왼쪽 방향)
@@ -87,6 +89,8 @@
 #define PTE14   14 // led 3
 #define PTE15   15 // led 2
 #define PTE16   16 // led 1
+
+#define PTB1    1  //dc in2
 
 #define MUX_BITS 	8
 
@@ -204,7 +208,7 @@
 #define GPIOE_PCOR (*((volatile unsigned*)(GPIOE_BASE + 0x8)))
 #define GPIOE_PTOR (*((volatile unsigned*)(GPIOE_BASE + 0xC)))
 #define GPIOE_PDDR (*((volatile unsigned*)(GPIOE_BASE + 0x14)))
-#define GPIOE_PDIR (*((volatile unsigned*)(GPIOE_BASE + 0x10)))
+#define GPIOE_PDIR (*((volatile unsigned*)(GPIOE_BASE + 0x10))) 
 
 
 #endif

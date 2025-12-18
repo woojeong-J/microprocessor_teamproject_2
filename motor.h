@@ -13,7 +13,7 @@ void FTM2_CH0_PWM(void);
 void DRV_Control(void);
 void DRV_Brake_Control(void);
 void DRV_Coasting_Control(void);
-void Keep_Constant_Speed(void);
+void DRV_Reverse_Control(void);
 void Distance(void);
 void Velocity_init(void);
 void Fuel_Warning(void);

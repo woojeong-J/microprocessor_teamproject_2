@@ -22,6 +22,11 @@ void PORT_init_Motor(void)
 	PCC_PORTB |= (1<<CGC_BIT); // ADC용 포트
 	PORTB_PCR0 &= ~((0b111)<<MUX_BITS);
 
+	//DC in2
+	PORTB_PCR1 &= ~((0b111)<<MUX_BITS);
+	PORTB_PCR1 |= (1<<MUX_BITS);  // GPIO
+	GPIOB_PDDR |= (1<<PTB1); // Output
+
 
 	PCC_PORTC |= (1<<CGC_BIT);
 	// 브레이크 버튼
@@ -42,7 +47,7 @@ void PORT_init_Motor(void)
 	PORTC_PCR15 &= ~((0b111)<<MUX_BITS);
 	PORTC_PCR15 |= (1<<MUX_BITS);  // GPIO
 	PORTC_PCR15 &= ~((0b1111)<<IRQC_BITS);
-	PORTC_PCR15 |= (0b1000<<IRQC_BITS); //logic 0
+	PORTC_PCR15 |= (0b1010<<IRQC_BITS); //falling edge
 	PORTC_PCR15 |= (1<<1) | (1<<0);
 	GPIOC_PDDR &= ~(1<<PTC15); // Input
 
@@ -51,14 +56,14 @@ void PORT_init_Motor(void)
 	PORTA_PCR12 &= ~((0b111)<<MUX_BITS);
 	PORTA_PCR12 |= (1<<MUX_BITS);  // GPIO
 	PORTA_PCR12 &= ~((0b1111)<<IRQC_BITS);
-	PORTA_PCR12 |= (0b1000<<IRQC_BITS); //logic 0
+	PORTA_PCR12 |= (0b1010<<IRQC_BITS); //falling edge
 	PORTA_PCR12 |= (1<<1) | (1<<0);
 	GPIOA_PDDR &= ~(1<<PTA12); // Input
 	// 시동버튼
 	PORTA_PCR13 &= ~((0b111)<<MUX_BITS);
 	PORTA_PCR13 |= (1<<MUX_BITS);  // GPIO
 	PORTA_PCR13 &= ~((0b1111)<<IRQC_BITS);
-	PORTA_PCR13 |= (0b1000<<IRQC_BITS); //logic 0
+	PORTA_PCR13 |= (0b1010<<IRQC_BITS); //falling edge
 	PORTA_PCR13 |= (1<<1) | (1<<0);
 	GPIOA_PDDR &= ~(1<<PTA13); // Input
 	// LED red
@@ -112,6 +117,7 @@ void FTM2_CH0_PWM(void) // DC motor PWM (FTM2 CH0)
 void DRV_Control()
 {
 	//DC motor control code
+	GPIOB_PCOR |= (1<<PTB1); // 전진
 
 	limited_speed = (max_speed * adcResult) / 4095; // 최고 한계 속도 설정
 	if(current_speed <= limited_speed)
@@ -132,10 +138,16 @@ void DRV_Brake_Control()
 	if(current_speed > 0)
 	{
 		current_speed = current_speed - 400; // 5초만에 정지
-		if(current_speed < 0)
-			current_speed = 0;
 	}
+	if(current_speed < 0) current_speed = 0;
+	
+	if((GPIOB_PDIR & (1<<PTB1)) ==0) 
 	FTM2_C0V = ((uint64_t)current_speed * FTM2_MOD) / max_speed; // PWM duty 변경
+	else
+	{
+	uint32_t reverse_pwm = ((uint64_t)current_speed * FTM2_MOD) / max_speed;
+    FTM2_C0V = FTM2_MOD - reverse_pwm; // <--- [핵심] 반전!
+	}
 }
 
 void DRV_Coasting_Control()
@@ -144,16 +156,34 @@ void DRV_Coasting_Control()
 	if(current_speed > 0)
 	{
 		current_speed = current_speed - 100; // 20초만에 정지
-		if(current_speed < 0)
-			current_speed = 0;
 	}
-	FTM2_C0V = ((uint64_t)current_speed * FTM2_MOD) / max_speed;
+	if(current_speed < 0) current_speed = 0;
+	if((GPIOB_PDIR & (1<<PTB1)) ==0) 
+	FTM2_C0V = ((uint64_t)current_speed * FTM2_MOD) / max_speed; // PWM duty 변경
+	else
+	{
+	uint32_t reverse_pwm = ((uint64_t)current_speed * FTM2_MOD) / max_speed;
+    FTM2_C0V = FTM2_MOD - reverse_pwm; // <--- [핵심] 반전!
+	}
 }
 
-void Keep_Constant_Speed()
+void DRV_Reverse_Control()
 {
-	//크루즈 모드시 일정 속도 유지 코드
-	FTM2_C0V = ((uint64_t)current_speed * FTM2_MOD) / max_speed;
+	//DC motor control code
+	GPIOB_PSOR |= (1<<PTB1); // 후진
+
+	limited_speed = ((max_speed/2) * adcResult) / 4095; // 최고 한계 속도 설정 100이 최대
+	if(current_speed <= limited_speed)
+	{
+		current_speed = current_speed + 100; // 가속도(s단위) 에 따라 속도 증가
+
+	}
+	else if(current_speed > limited_speed)
+	{
+		current_speed = limited_speed; // 최대 속도 넘어가면 최대 속도로 고정
+	}
+	uint32_t reverse_pwm = ((uint64_t)current_speed * FTM2_MOD) / max_speed;
+    FTM2_C0V = FTM2_MOD - reverse_pwm; // <--- [핵심] 반전!
 }
 
 void Distance()
@@ -174,11 +204,11 @@ void Fuel_Warning()
 {
 	if(distance > 60)
     {
-    	GPIOD_PCOR = (1<<PTD15); //led red on
+    	GPIOD_PCOR |= (1<<PTD15); //led red on
     }
     else
    	{
-        GPIOD_PSOR = (1<<PTD15);
+        GPIOD_PSOR |= (1<<PTD15);
    	}
 }
 

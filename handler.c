@@ -32,7 +32,7 @@ void LPIT0_init(void)
     // ch1
     LPIT_MIER |= (1<<TIE1_BIT); // Enable Timer 1 interrupt
 
-    LPIT_TVAL1 = 2000; // 80MHz / 2 / 2000 = 20000Hz -> 0.05ms
+    LPIT_TVAL1 = 80000; // 80MHz / 2 / 80000 = 500Hz -> 2ms
 
 	LPIT_TCTRL1 &= ~((0b11)<<MODE_BITS);
 	LPIT_TCTRL1 |= (1<<T_EN_BIT);
@@ -42,11 +42,11 @@ void NVIC_init_IRQs(void)
 {
     NVIC_ICPR1 |= (1<<(48 % 32)); // LPIT0 ch 0 IRQ
 	NVIC_ISER1 |= (1<<(48 % 32));
-	NVIC_IPR48 = 10;
+	NVIC_IPR48 = 20;
 
 	NVIC_ICPR1 |= (1<<(49 % 32)); // LPIT0 ch 1 IRQ
 	NVIC_ISER1 |= (1<<(49 % 32));
-	NVIC_IPR48 = 10;
+	NVIC_IPR48 = 20;
 
 	NVIC_ICPR1 |= (1<<(59 % 32)); // PORTA IRQ
 	NVIC_ISER1 |= (1<<(59 % 32));
@@ -66,10 +66,10 @@ void PORTA_IRQHandler(void)
     {
     	if(input_lock ==0)
     	{
-        if (Start_Flag == 0) Start_Flag = 1; //시동 on
-        else Start_Flag = 0; //시동 on이고 p이면서 속도 0이면 시동 off
-        }
+        Start_Flag = 1; //시동 on
         input_lock = 30;
+        }
+        
     	
         PORTA_PCR13 |= (1 << ISF_BIT);
     }
@@ -78,7 +78,11 @@ void PORTA_IRQHandler(void)
 
     if (PORTA_PCR12 & (1 << ISF_BIT))
     {
+        if(input_lock ==0)
+        {
         Gear_Flag = 1;
+        input_lock = 30;
+        }
 
         PORTA_PCR12 |= (1 << ISF_BIT);
     }
@@ -95,8 +99,8 @@ void PORTC_IRQHandler(void)
             if(mode == 1) mode = 0;
             else if(mode == 2) mode = 1;
             else mode = 1;
+            input_lock = 30;
         }
-        input_lock = 30;
         PORTC_PCR13 |= (1<<ISF_BIT);   // ISF 플래그 클리어
     }
 
@@ -108,8 +112,8 @@ void PORTC_IRQHandler(void)
             if(mode == 2) mode = 0;
             else if(mode == 1) mode = 2;
             else mode = 2;
+            input_lock = 30;
         }
-        input_lock = 30;
         PORTC_PCR12 |= (1<<ISF_BIT);   // ISF 플래그 클리어
     }
 
@@ -117,7 +121,7 @@ void PORTC_IRQHandler(void)
 
     if (PORTC_PCR17 & (1 << ISF_BIT))
     {
-        if(GPIOC_PDIR & (1 << PTC17)) Accel_Flag = 1;
+        if((GPIOC_PDIR & (1 << PTC17))==0) Accel_Flag = 1;
         else Accel_Flag = 0;
 
         PORTC_PCR17 |= (1 << ISF_BIT);
@@ -127,7 +131,7 @@ void PORTC_IRQHandler(void)
 
     if (PORTC_PCR16 & (1 << ISF_BIT))
     {
-        if(GPIOC_PDIR & (1 << PTC16))
+        if((GPIOC_PDIR & (1 << PTC16))==0)
         {
             Brake_Flag = 1;
             mode = 3;
@@ -150,8 +154,8 @@ void PORTC_IRQHandler(void)
         {
             if(Cruise_Flag == 0) Cruise_Flag = 1;
             else Cruise_Flag = 0;
+            input_lock = 30;
         }
-        input_lock = 30;
         	
         PORTC_PCR15 |= (1 << ISF_BIT);
     }

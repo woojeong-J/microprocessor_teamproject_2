@@ -113,11 +113,11 @@ void Handle_Steering()
     }
     else if(mode == 1) //왼쪽 모드
     {
-       FTM2_C1V = SERVO_LEFT; //서보 왼쪽 
+       FTM2_C1V = SERVO_RIGHT; //서보 왼쪽 
     }
     else if(mode == 2) //오른쪽 모드
     {
-        FTM2_C1V = SERVO_RIGHT; 
+        FTM2_C1V = SERVO_LEFT; 
     }
 }
 
@@ -137,7 +137,7 @@ void Led_blink()
     if (led_counter < 5) return; // 5회 호출마다 1번 실행 50ms 단위
     led_counter = 0;
 
-    if (mode == 2) 
+    if (mode == 1) 
     {
     // 왼쪽 방향 모드 (C13)
     // E16 → E15 → E14 → A0 → A1
@@ -153,7 +153,7 @@ void Led_blink()
         if (step >= 5) step = 0;
     }
 
-    else if (mode == 1) 
+    else if (mode == 2) 
     {
         // 오른쪽 방향 모드 (C12)
         // A1 → A0 → E14 → E15 → E16

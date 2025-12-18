@@ -258,7 +258,7 @@ volatile int scan_index = 0;
 void Display_ON()
 {
     displayDigitClear();
-    
+
 	switch(scan_index)
 	{
 		case 0:
